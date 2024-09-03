@@ -21,7 +21,7 @@ type TaskResponse struct {
 	Tasks []Task `json:"tasks"`
 }
 
-func FetchTasks(db *sql.DB) ([]Task, error) {
+func GetAllTasks(db *sql.DB) ([]Task, error) {
 	//Получаем задачи из таблицы
 	rows, err := db.Query("SELECT id, date, title, comment, repeat FROM scheduler ORDER BY date ASC LIMIT 50")
 	if err != nil {
@@ -88,7 +88,7 @@ func DoneTask(db *sql.DB, id int) (*Task, error) {
 
 func PutTask(db *sql.DB, task Task) (Task, error) {
 
-	// Выполнение SQL-запроса на обновление задачи
+	// Обнавляем данные задачи
 	_, err := db.Exec("UPDATE scheduler SET date = ?, title = ?, comment = ?, repeat = ? WHERE id = ?",
 		task.Date, task.Title, task.Comment, task.Repeat, task.ID)
 	if err != nil {
@@ -97,7 +97,6 @@ func PutTask(db *sql.DB, task Task) (Task, error) {
 
 	log.Printf("Задача %s обновлена: %s", task.ID, task.Title)
 
-	// Возвращаем обновленную задачу и nil (без ошибки)
 	return task, nil
 
 }
