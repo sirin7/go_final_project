@@ -5,9 +5,10 @@ import (
 
 	"log"
 	"net/http"
+
+	_ "modernc.org/sqlite"
 )
 
-// GetTask - структура для работы с задачами из базы данных
 type Handler struct {
 	DB *sql.DB
 }
@@ -31,6 +32,6 @@ func (h *Handler) TaskHandler(w http.ResponseWriter, r *http.Request) {
 		h.DeleteTask(w, r)
 	default:
 		log.Println(r.Method)
-		http.Error(w, "Метод не разрешен", http.StatusMethodNotAllowed)
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }

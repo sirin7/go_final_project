@@ -4,16 +4,20 @@ import (
 	"log"
 	"net/http"
 
+	_ "modernc.org/sqlite"
+
+	"github.com/sirin7/go_final_project/database"
+	"github.com/sirin7/go_final_project/helpers"
 	"github.com/sirin7/go_final_project/models"
 )
 
 // Получаем все задачи из базы
 func (h *Handler) GetTasks(w http.ResponseWriter, r *http.Request) {
 	var tasks []models.Task
-	tasks, err := models.GetAllTasks(h.DB)
+	tasks, err := database.GetAllTasks(h.DB)
 	if err != nil {
 		http.Error(w, `{"error": "failed to fetch tasks"}`, http.StatusInternalServerError)
-		log.Println("Ошибка при извлечении задач:", err)
+		log.Println("Error when extracting tasks:", err)
 		return
 	}
 
@@ -26,6 +30,6 @@ func (h *Handler) GetTasks(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Отправляем ответ клиенту
-	models.EncodeJSON(w, response)
-	log.Println("JSON успешно сериализован и отправлен клиенту")
+	helpers.EncodeJSON(w, response)
+
 }

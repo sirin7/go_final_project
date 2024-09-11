@@ -7,8 +7,10 @@ import (
 	"strconv"
 	"time"
 
+	_ "modernc.org/sqlite"
+
+	"github.com/sirin7/go_final_project/database"
 	"github.com/sirin7/go_final_project/helpers"
-	"github.com/sirin7/go_final_project/models"
 )
 
 // Отмечаем задачу как выполненую при пустом правиле повторения, если правило повторения есть высчитываем и переносим на следующую дату
@@ -17,18 +19,18 @@ func (h *Handler) DoneTask(w http.ResponseWriter, r *http.Request) {
 	idStr := r.URL.Query().Get("id")
 	if idStr == "" {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`{"error": "id missing"}`))
+		_, _ = w.Write([]byte(`{"error": "id missing"}`))
 		return
 	}
 
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`{"error": "invalid id format"}`))
+		_, _ = w.Write([]byte(`{"error": "invalid id format"}`))
 		return
 	}
 	//Проверяем есть ли задача в базе
-	taskFromDB, err := models.GetTaskById(h.DB, id)
+	taskFromDB, err := database.GetTaskById(h.DB, id)
 	if err != nil {
 		http.Error(w, `{"error": "database error"}`, http.StatusInternalServerError)
 		return
@@ -41,7 +43,7 @@ func (h *Handler) DoneTask(w http.ResponseWriter, r *http.Request) {
 	task := *taskFromDB
 	// Если правило повтороения отсутствует, удаляем задачу из базы
 	if task.Repeat == "" {
-		doneTask, err := models.DoneTask(h.DB, id)
+		doneTask, err := database.DoneTask(h.DB, id)
 		if err != nil {
 			http.Error(w, `{"error": "failed to delete task"}`, http.StatusBadRequest)
 			return
@@ -51,7 +53,7 @@ func (h *Handler) DoneTask(w http.ResponseWriter, r *http.Request) {
 		// Формирование ответа
 		w.Header().Set("Content-Type", "application/json, charset=UTF-8")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(fmt.Sprint(`{}`)))
+		_, _ = w.Write([]byte(fmt.Sprint(`{}`)))
 		return
 	}
 
@@ -63,7 +65,7 @@ func (h *Handler) DoneTask(w http.ResponseWriter, r *http.Request) {
 	}
 	task.Date = nextDate
 
-	updatedTaskID, err := models.PutTask(h.DB, task)
+	updatedTaskID, err := database.PutTask(h.DB, task)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -73,6 +75,6 @@ func (h *Handler) DoneTask(w http.ResponseWriter, r *http.Request) {
 	// Формирование ответа
 	w.Header().Set("Content-Type", "application/json, charset=UTF-8")
 	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte(fmt.Sprint(`{}`)))
+	_, _ = w.Write([]byte(fmt.Sprint(`{}`)))
 
 }
